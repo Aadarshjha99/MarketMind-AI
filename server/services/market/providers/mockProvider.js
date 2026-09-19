@@ -75,40 +75,54 @@ const getHistoricalData = async (symbol) => {
         throw new Error("Stock not found");
     }
 
-    return [
-        {
-            datetime: "2026-09-15",
-            open: 3450,
-            high: 3500,
-            low: 3430,
-            close: 3480,
-            volume: 1100000
-        },
-        {
-            datetime: "2026-09-16",
-            open: 3480,
-            high: 3520,
-            low: 3460,
-            close: 3505,
-            volume: 1180000
-        },
-        {
-            datetime: "2026-09-17",
-            open: 3505,
-            high: 3540,
-            low: 3485,
-            close: 3520,
-            volume: 1210000
-        },
-        {
-            datetime: "2026-09-18",
-            open: 3520,
-            high: 3550,
-            low: 3500,
-            close: 3525.5,
-            volume: 1250000
-        }
-    ];
+    const data = [];
+
+    let price = 3200;
+
+    const startDate = new Date("2026-06-12");
+
+    for (let i = 0; i < 100; i++) {
+        const date = new Date(startDate);
+
+        date.setDate(
+            startDate.getDate() + i
+        );
+
+        // Deterministic movement for testing
+        const movement =
+            Math.sin(i / 5) * 20 +
+            (i % 7 - 3) * 4;
+
+        const open = price;
+
+        const close =
+            price + movement;
+
+        const high =
+            Math.max(open, close) + 12;
+
+        const low =
+            Math.min(open, close) - 12;
+
+        const volume =
+            900000 + (i * 1375);
+
+        data.push({
+            datetime: date
+                .toISOString()
+                .split("T")[0],
+
+            open: Number(open.toFixed(2)),
+            high: Number(high.toFixed(2)),
+            low: Number(low.toFixed(2)),
+            close: Number(close.toFixed(2)),
+            volume
+        });
+
+        price = close;
+    }
+
+    return data;
 };
 
 module.exports = {

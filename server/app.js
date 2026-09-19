@@ -3,6 +3,7 @@ const cors = require("cors");
 
 const authRoutes = require("./routes/authRoutes");
 const stockRoutes = require("./routes/stockRoutes");
+const newsRoutes = require("./routes/newsRoutes");
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 // Routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/stocks", stockRoutes);
+app.use("/api/v1/news",newsRoutes);
 
 // Health check
 app.get("/api/v1/health", (req, res) => {

@@ -1,4 +1,5 @@
 const marketService = require("../services/market/marketService");
+const technicalService = require("../services/technical/technicalService");
 
 const searchStocks = async (req, res) => {
     try {
@@ -104,8 +105,52 @@ const getStockHistory = async (req, res) => {
     }
 };
 
+const getTechnicalIndicators = async (req, res) => {
+    try {
+        const { symbol } = req.params;
+
+        if (!symbol) {
+            return res.status(400).json({
+                success: false,
+                message: "Stock symbol is required"
+            });
+        }
+
+        const historicalData =
+            await marketService.getHistoricalData(
+                symbol.toUpperCase()
+            );
+
+        const indicators =
+            technicalService.calculateIndicators(
+                historicalData
+            );
+
+        res.status(200).json({
+            success: true,
+            message: "Technical indicators calculated successfully",
+            data: {
+                symbol: symbol.toUpperCase(),
+                indicators
+            }
+        });
+
+    } catch (error) {
+        console.error(
+            "Technical analysis error:",
+            error.message
+        );
+
+        res.status(500).json({
+            success: false,
+            message: "Unable to calculate technical indicators"
+        });
+    }
+};
+
 module.exports = {
     searchStocks,
     getStockQuote,
-    getStockHistory
+    getStockHistory,
+    getTechnicalIndicators
 };
