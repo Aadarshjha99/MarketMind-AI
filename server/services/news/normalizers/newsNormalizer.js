@@ -1,19 +1,51 @@
 const normalizeNews = (articles, symbol) => {
-    return articles.map((article) => ({
-        symbol: symbol.toUpperCase(),
+    return articles
+        .map((article) => {
+            const rawPublishedAt =
+                article.publishedAt ||
+                article.published_time ||
+                article.publishedAtUtc ||
+                article.published_at;
 
-        title: article.title,
+            const publishedAt = new Date(rawPublishedAt);
 
-        description: article.description || "",
+            // Ignore articles with an invalid publication date
+            if (Number.isNaN(publishedAt.getTime())) {
+                console.warn(
+                    `Skipping news article with invalid date: ${article.title || article.heading}`
+                );
 
-        source: article.source || "Unknown",
+                return null;
+            }
 
-        author: article.author || null,
+            return {
+                symbol: symbol.toUpperCase(),
 
-        url: article.url,
+                title:
+                    article.title ||
+                    article.heading ||
+                    "Untitled article",
 
-        publishedAt: article.publishedAt
-    }));
+                description:
+                    article.description ||
+                    article.summary ||
+                    "",
+
+                source:
+                    article.source ||
+                    article.source_name ||
+                    "Unknown",
+
+                author: article.author || null,
+
+                url:
+                    article.url ||
+                    article.article_link,
+
+                publishedAt
+            };
+        })
+        .filter(Boolean);
 };
 
 module.exports = {

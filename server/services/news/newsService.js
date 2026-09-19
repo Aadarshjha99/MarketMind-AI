@@ -1,56 +1,65 @@
-const mockNewsProvider = require("./providers/mockNewsProvider");
 const News = require("../../models/News");
 
-const {
-    normalizeNews
-} = require("./normalizers/newsNormalizer");
+const mockNewsProvider = require("./providers/mockNewsProvider");
+const upstoxNewsProvider = require("./providers/upstoxNewsProvider");
+
+const { getInstrumentKey } = require("./providers/upstoxInstrumentMap");
+const { normalizeNews } = require("./normalizers/newsNormalizer");
 
 const providers = {
-    mock: mockNewsProvider
+    mock: mockNewsProvider,
+    upstox: upstoxNewsProvider
 };
 
-const activeProviderName =
-    process.env.NEWS_DATA_PROVIDER || "mock";
+const activeProviderName = process.env.NEWS_DATA_PROVIDER || "mock";
 
-const activeProvider =
-    providers[activeProviderName];
+const activeProvider = providers[activeProviderName];
 
 if (!activeProvider) {
     throw new Error(
-        `Unsupported news provider: ${activeProviderName}`
+        `Unsupported news data provider: ${activeProviderName}`
     );
 }
 
-const getNews = async (symbol) => {
+const getStockNews = async (symbol) => {
     const normalizedSymbol = symbol.toUpperCase();
 
-    const articles =
-        await activeProvider.getNews(normalizedSymbol);
+    let articles;
 
-    const normalizedArticles =
-        normalizeNews(
-            articles,
-            normalizedSymbol
-        );
+    if (activeProviderName === "upstox") {
+        const instrumentKey = getInstrumentKey(normalizedSymbol);
+
+        if (!instrumentKey) {
+            throw new Error(
+                `Instrument key not found for ${normalizedSymbol}`
+            );
+        }
+
+        articles = await activeProvider.getNews(instrumentKey);
+    } else {
+        articles = await activeProvider.getNews(normalizedSymbol);
+    }
+
+    const normalizedArticles = normalizeNews(
+        articles,
+        normalizedSymbol
+    );
 
     const savedArticles = [];
 
     for (const article of normalizedArticles) {
-        const savedArticle =
-            await News.findOneAndUpdate(
-                {
-                    symbol: article.symbol,
-                    url: article.url
-                },
-                {
-                    $set: article
-                },
-                {
-                    returnDocument: "after",
-                    upsert: true,
-                    setDefaultsOnInsert: true
-                }
-            );
+        const savedArticle = await News.findOneAndUpdate(
+            {
+                symbol: article.symbol,
+                url: article.url
+            },
+            article,
+            {
+                returnDocument: "after",
+                upsert: true,
+                setDefaultsOnInsert: true
+            }
+        );
 
         savedArticles.push(savedArticle);
     }
@@ -59,5 +68,5 @@ const getNews = async (symbol) => {
 };
 
 module.exports = {
-    getNews
+    getStockNews
 };
