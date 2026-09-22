@@ -1,4 +1,5 @@
 const mockProvider = require("./providers/mockProvider");
+const upstoxProvider = require("./providers/upstoxProvider");
 
 const {
     normalizeQuote,
@@ -6,7 +7,8 @@ const {
 } = require("./normalizers/marketDataNormalizer");
 
 const providers = {
-    mock: mockProvider
+    mock: mockProvider,
+    upstox: upstoxProvider
 };
 
 const activeProviderName =

@@ -1,18 +1,23 @@
 const normalizeNews = (articles, symbol) => {
     return articles
         .map((article) => {
-            const rawPublishedAt =
-                article.publishedAt ||
-                article.published_time ||
-                article.publishedAtUtc ||
-                article.published_at;
+            let publishedAt;
 
-            const publishedAt = new Date(rawPublishedAt);
+            if (typeof article.published_time === "number") {
+                publishedAt = new Date(article.published_time);
+            } else {
+                publishedAt = new Date(
+                    article.publishedAt ||
+                    article.published_at ||
+                    article.publishedAtUtc
+                );
+            }
 
-            // Ignore articles with an invalid publication date
             if (Number.isNaN(publishedAt.getTime())) {
                 console.warn(
-                    `Skipping news article with invalid date: ${article.title || article.heading}`
+                    `Skipping article with invalid date: ${
+                        article.heading || article.title
+                    }`
                 );
 
                 return null;
@@ -22,25 +27,24 @@ const normalizeNews = (articles, symbol) => {
                 symbol: symbol.toUpperCase(),
 
                 title:
-                    article.title ||
                     article.heading ||
+                    article.title ||
                     "Untitled article",
 
                 description:
-                    article.description ||
                     article.summary ||
+                    article.description ||
                     "",
 
                 source:
                     article.source ||
-                    article.source_name ||
-                    "Unknown",
+                    "Upstox",
 
                 author: article.author || null,
 
                 url:
-                    article.url ||
-                    article.article_link,
+                    article.article_link ||
+                    article.url,
 
                 publishedAt
             };
