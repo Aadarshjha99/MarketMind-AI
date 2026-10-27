@@ -3,7 +3,9 @@ const News = require("../../models/News");
 const mockNewsProvider = require("./providers/mockNewsProvider");
 const upstoxNewsProvider = require("./providers/upstoxNewsProvider");
 
-const { getInstrumentKey } = require("./providers/upstoxInstrumentMap");
+const {
+    getInstrumentBySymbol
+} = require("../instruments/instrumentService");
 const { normalizeNews } = require("./normalizers/newsNormalizer");
 
 const providers = {
@@ -26,16 +28,13 @@ const getStockNews = async (symbol) => {
 
     let articles;
 
+
     if (activeProviderName === "upstox") {
-        const instrumentKey = getInstrumentKey(normalizedSymbol);
+        const instrument = await getInstrumentBySymbol(normalizedSymbol);
 
-        if (!instrumentKey) {
-            throw new Error(
-                `Instrument key not found for ${normalizedSymbol}`
-            );
-        }
-
-        articles = await activeProvider.getNews(instrumentKey);
+        articles = await activeProvider.getNews(
+            instrument.instrumentKey
+        );
     } else {
         articles = await activeProvider.getNews(normalizedSymbol);
     }

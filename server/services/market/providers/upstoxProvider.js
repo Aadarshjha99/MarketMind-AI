@@ -1,24 +1,17 @@
+const {
+    searchInstruments,
+    getInstrumentBySymbol
+} = require("../../instruments/instrumentService");
+
 const upstoxClient = require("../../upstox/upstoxClient");
 
-const instrumentMap = {
-    TCS: "NSE_EQ|INE467B01029",
-    INFY: "NSE_EQ|INE009A01021",
-    RELIANCE: "NSE_EQ|INE002A01018",
-    HDFCBANK: "NSE_EQ|INE040A01034"
-};
-
-const getInstrumentKey = (symbol) => {
-    const key = instrumentMap[symbol.toUpperCase()];
-
-    if (!key) {
-        throw new Error(`Unsupported stock symbol: ${symbol}`);
-    }
-
-    return key;
+const searchStocks = async (query) => {
+    return searchInstruments(query);
 };
 
 const getQuote = async (symbol) => {
-    const instrumentKey = getInstrumentKey(symbol);
+    const instrument = await getInstrumentBySymbol(symbol);
+    const instrumentKey = instrument.instrumentKey;
 
     const response = await upstoxClient.get(
         "/market-quote/ohlc",
@@ -30,7 +23,7 @@ const getQuote = async (symbol) => {
         }
     );
 
-    const dataKey = `${instrumentKey.split("|")[0]}:${symbol.toUpperCase()}`;
+    const dataKey = `${instrumentKey.split("|")[0]}:${instrument.symbol}`;
 
     const stockData = response.data.data[dataKey];
 
@@ -39,8 +32,9 @@ const getQuote = async (symbol) => {
     }
 
     return {
-        symbol: symbol.toUpperCase(),
-        exchange: "NSE",
+        symbol: instrument.symbol,
+        companyName: instrument.companyName,
+        exchange: instrument.exchange,
         currency: "INR",
         price: stockData.last_price,
         change: stockData.last_price - stockData.ohlc.close,
@@ -57,5 +51,6 @@ const getQuote = async (symbol) => {
 };
 
 module.exports = {
+    searchStocks,
     getQuote
 };
