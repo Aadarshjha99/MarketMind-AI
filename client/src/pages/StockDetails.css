@@ -602,3 +602,21 @@
         height: 280px;
     }
 }
+
+.chart-price-summary {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    padding: 12px 0 4px;
+}
+
+.chart-price-summary strong {
+    color: #F5F7FA;
+    font-size: 22px;
+    font-weight: 650;
+}
+
+.chart-price-summary span {
+    color: #9AA4B2;
+    font-size: 12px;
+}

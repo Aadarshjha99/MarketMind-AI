@@ -13,35 +13,12 @@ import {
 
 import {
     getStockQuote,
-    searchStocks
+    searchStocks,
+    getStockHistory,
+    getStockTechnical
 } from "../services/marketApi";
 
 import "./StockDetails.css";
-
-
-const indicators = [
-    {
-        name: "SMA 20",
-        value: "₹3,384.20",
-        status: "Bullish"
-    },
-    {
-        name: "SMA 50",
-        value: "₹3,312.80",
-        status: "Bullish"
-    },
-    {
-        name: "RSI 14",
-        value: "62.4",
-        status: "Neutral"
-    },
-    {
-        name: "MACD",
-        value: "+18.42",
-        status: "Bullish"
-    }
-];
-
 
 const news = [
     {
@@ -64,6 +41,13 @@ const news = [
     }
 ];
 
+const periodDays = {
+    "1D": 1,
+    "1W": 7,
+    "1M": 30,
+    "6M": 183,
+    "1Y": 365
+};
 
 function StockDetails() {
 
@@ -76,7 +60,14 @@ function StockDetails() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
+    const [history, setHistory] = useState([]);
+    const [historyLoading, setHistoryLoading] = useState(false);
+    const [historyError, setHistoryError] = useState("");
+    const [period, setPeriod] = useState("1M");
 
+    const [technicalData, setTechnicalData] = useState(null);
+    const [technicalLoading, setTechnicalLoading] = useState(false);
+    const [technicalError, setTechnicalError] = useState("");
     // --------------------------------
     // Decode and validate symbol
     // --------------------------------
@@ -207,6 +198,147 @@ function StockDetails() {
     }, [symbol, decodedSymbol, isValidSymbol]);
 
 
+    useEffect(() => {
+        let cancelled = false;
+
+        const loadHistory = async () => {
+            try {
+                setHistoryLoading(true);
+                setHistoryError("");
+                setHistory([]);
+
+                // Use intraday candles for 1D.
+                // Use daily candles for other periods.
+                const interval = period === "1D" ? "5m" : "1d";
+
+                const response = await getStockHistory(
+                    symbol,
+                    interval
+                );
+
+                if (!cancelled) {
+                    const candles = response.data;
+
+                    if (!Array.isArray(candles)) {
+                        throw new Error(
+                            "Unexpected historical data format."
+                        );
+                    }
+
+                    setHistory(candles);
+                }
+            } catch (error) {
+                if (!cancelled) {
+                    setHistoryError(
+                        error.response?.data?.message ||
+                        error.message ||
+                        "Failed to load historical data."
+                    );
+                }
+            } finally {
+                if (!cancelled) {
+                    setHistoryLoading(false);
+                }
+            }
+        };
+
+        if (symbol) {
+            loadHistory();
+        }
+
+        return () => {
+            cancelled = true;
+        };
+    }, [symbol, period]);
+
+    useEffect(() => {
+        let cancelled = false;
+
+        const loadTechnicalData = async () => {
+            try {
+                setTechnicalLoading(true);
+                setTechnicalError("");
+                setTechnicalData(null);
+
+                const response = await getStockTechnical(symbol);
+
+                if (!cancelled) {
+                    const indicators = response.data?.indicators;
+
+                    if (!Array.isArray(indicators) || !indicators.length) {
+                        throw new Error("No technical indicators available.");
+                    }
+
+                    setTechnicalData(indicators[indicators.length - 1]);
+                }
+            } catch (error) {
+                if (!cancelled) {
+                    setTechnicalError(
+                        error.response?.data?.message ||
+                        error.message ||
+                        "Unable to load technical indicators."
+                    );
+                }
+            } finally {
+                if (!cancelled) {
+                    setTechnicalLoading(false);
+                }
+            }
+        };
+
+        if (symbol) {
+            loadTechnicalData();
+        }
+
+        return () => {
+            cancelled = true;
+        };
+    }, [symbol]);
+
+    
+    const indicators = [
+        {
+            name: "SMA 20",
+            value: technicalData?.sma20,
+            status: technicalData?.sma20 == null
+                ? "Unavailable"
+                : technicalData.close > technicalData.sma20
+                    ? "Bullish"
+                    : "Bearish"
+        },
+        {
+            name: "SMA 50",
+            value: technicalData?.sma50,
+            status: technicalData?.sma50 == null
+                ? "Unavailable"
+                : technicalData.close > technicalData.sma50
+                    ? "Bullish"
+                    : "Bearish"
+        },
+        {
+            name: "RSI 14",
+            value: technicalData?.rsi14,
+            status: technicalData?.rsi14 == null
+                ? "Unavailable"
+                : technicalData.rsi14 >= 70
+                    ? "Overbought"
+                    : technicalData.rsi14 <= 30
+                        ? "Oversold"
+                        : "Neutral"
+        },
+        {
+            name: "MACD",
+            value: technicalData?.macd,
+            status: technicalData?.macd == null ||
+                    technicalData?.macdSignal == null
+                ? "Unavailable"
+                : technicalData.macd > technicalData.macdSignal
+                    ? "Bullish"
+                    : "Bearish"
+        }
+    ];
+
+
     // --------------------------------
     // Loading State
     // --------------------------------
@@ -283,6 +415,71 @@ function StockDetails() {
         stockInfo?.sector ||
         "NSE Equity";
 
+    const validHistory = history.filter(
+        (candle) =>
+            candle.datetime &&
+            Number.isFinite(Number(candle.close))
+    );
+
+    const latestDate = validHistory.length
+        ? new Date(validHistory[0].datetime).toDateString()
+        : "";
+
+    const filteredHistory = validHistory
+        .filter((candle) => {
+            const candleDate = new Date(candle.datetime);
+
+            if (period === "1D") {
+                return candleDate.toDateString() === latestDate;
+            }
+
+            const cutoff = new Date();
+            cutoff.setDate(
+                cutoff.getDate() - periodDays[period]
+            );
+
+            return candleDate >= cutoff;
+        })
+        .sort(
+            (a, b) =>
+                new Date(a.datetime) - new Date(b.datetime)
+        );
+
+    const chartValues = filteredHistory.map(
+        (candle) => Number(candle.close)
+    );
+
+    const chartMin = chartValues.length
+        ? Math.min(...chartValues)
+        : 0;
+
+    const chartMax = chartValues.length
+        ? Math.max(...chartValues)
+        : 0;
+
+    const chartRange = chartMax - chartMin || 1;
+
+    const chartPoints = chartValues.map((price, index) => ({
+        x:
+            chartValues.length === 1
+                ? 500
+                : (index / (chartValues.length - 1)) * 1000,
+
+        y:
+            280 -
+            ((price - chartMin) / chartRange) * 240
+    }));
+
+    const chartPath = chartPoints
+        .map(
+            (point, index) =>
+                `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`
+        )
+        .join(" ");
+
+    const chartAreaPath = chartPoints.length
+        ? `${chartPath} L 1000 300 L 0 300 Z`
+        : "";
 
     return (
 
@@ -526,154 +723,153 @@ function StockDetails() {
             {/* Chart */}
 
             <section className="stock-chart-card">
-
                 <div className="stock-chart-header">
-
                     <div>
-
                         <span className="chart-label">
                             PRICE PERFORMANCE
                         </span>
-
-                        <h3>
-                            Market Price
-                        </h3>
-
+                        <h3>Historical Price</h3>
                     </div>
-
 
                     <div className="stock-chart-periods">
-
-                        <button>
-                            1D
-                        </button>
-
-                        <button className="active">
-                            1W
-                        </button>
-
-                        <button>
-                            1M
-                        </button>
-
-                        <button>
-                            6M
-                        </button>
-
-                        <button>
-                            1Y
-                        </button>
-
+                        {["1D", "1W", "1M", "6M", "1Y"].map((item) => (
+                            <button
+                                key={item}
+                                className={period === item ? "active" : ""}
+                                onClick={() => setPeriod(item)}
+                            >
+                                {item}
+                            </button>
+                        ))}
                     </div>
-
                 </div>
 
-
-
-                <div className="stock-chart">
-
-                    <div className="chart-values">
-
-                        <span>3,450</span>
-                        <span>3,400</span>
-                        <span>3,350</span>
-                        <span>3,300</span>
-
+                {historyLoading ? (
+                    <div className="market-data-loading">
+                        Loading historical prices...
                     </div>
+                ) : historyError ? (
+                    <div className="market-data-loading">
+                        {historyError}
+                    </div>
+                ) : filteredHistory.length === 0 ? (
+                    <div className="market-data-loading">
+                        No historical prices available for this period.
+                    </div>
+                ) : (
+                    <>
+                        <div className="chart-price-summary">
+                            <strong>
+                                ₹{chartValues[chartValues.length - 1].toLocaleString(
+                                    "en-IN",
+                                    { maximumFractionDigits: 2 }
+                                )}
+                            </strong>
 
-
-                    <div className="stock-chart-area">
-
-                        <svg
-                            viewBox="0 0 1000 330"
-                            preserveAspectRatio="none"
-                        >
-
-                            <defs>
-
-                                <linearGradient
-                                    id="stockChartGradient"
-                                    x1="0"
-                                    y1="0"
-                                    x2="0"
-                                    y2="1"
-                                >
-
-                                    <stop
-                                        offset="0%"
-                                        stopColor="#4F8CFF"
-                                        stopOpacity="0.22"
-                                    />
-
-                                    <stop
-                                        offset="100%"
-                                        stopColor="#4F8CFF"
-                                        stopOpacity="0"
-                                    />
-
-                                </linearGradient>
-
-                            </defs>
-
-
-                            <path
-                                d="
-                                    M0 270
-                                    C45 258 70 220 105 235
-                                    C145 252 165 205 205 218
-                                    C245 230 270 185 310 196
-                                    C350 207 375 158 415 174
-                                    C450 190 475 135 520 151
-                                    C555 166 590 120 625 137
-                                    C665 155 700 104 735 119
-                                    C775 135 810 80 850 96
-                                    C900 113 935 70 1000 55
-                                    L1000 330
-                                    L0 330
-                                    Z
-                                "
-                                fill="url(#stockChartGradient)"
-                            />
-
-
-                            <path
-                                d="
-                                    M0 270
-                                    C45 258 70 220 105 235
-                                    C145 252 165 205 205 218
-                                    C245 230 270 185 310 196
-                                    C350 207 375 158 415 174
-                                    C450 190 475 135 520 151
-                                    C555 166 590 120 625 137
-                                    C665 155 700 104 735 119
-                                    C775 135 810 80 850 96
-                                    C900 113 935 70 1000 55
-                                "
-                                fill="none"
-                                stroke="#4F8CFF"
-                                strokeWidth="3"
-                                vectorEffect="non-scaling-stroke"
-                            />
-
-                        </svg>
-
-
-                        <div className="chart-times">
-
-                            <span>Sep 29</span>
-                            <span>Sep 30</span>
-                            <span>Oct 1</span>
-                            <span>Oct 2</span>
-                            <span>Oct 5</span>
-                            <span>Oct 6</span>
-
+                            <span>
+                                {filteredHistory.length}{" "}
+                                {period === "1D" ? "price points" : "trading sessions"}
+                            </span>
                         </div>
 
-                    </div>
+                        <div className="stock-chart">
+                            <div className="chart-values">
+                                {[1, 0.66, 0.33, 0].map((fraction) => (
+                                    <span key={fraction}>
+                                        ₹{(
+                                            chartMin +
+                                            chartRange * fraction
+                                        ).toLocaleString("en-IN", {
+                                            maximumFractionDigits: 2
+                                        })}
+                                    </span>
+                                ))}
+                            </div>
 
-                </div>
+                            <div className="stock-chart-area">
+                                <svg
+                                    viewBox="0 0 1000 330"
+                                    preserveAspectRatio="none"
+                                    role="img"
+                                    aria-label={`${displaySymbol} historical closing prices`}
+                                >
+                                    <defs>
+                                        <linearGradient
+                                            id="stockChartGradient"
+                                            x1="0"
+                                            y1="0"
+                                            x2="0"
+                                            y2="1"
+                                        >
+                                            <stop
+                                                offset="0%"
+                                                stopColor="#4F8CFF"
+                                                stopOpacity="0.22"
+                                            />
+                                            <stop
+                                                offset="100%"
+                                                stopColor="#4F8CFF"
+                                                stopOpacity="0"
+                                            />
+                                        </linearGradient>
+                                    </defs>
 
+                                    <path
+                                        d={chartAreaPath}
+                                        fill="url(#stockChartGradient)"
+                                    />
+
+                                    <path
+                                        d={chartPath}
+                                        fill="none"
+                                        stroke="#4F8CFF"
+                                        strokeWidth="3"
+                                        vectorEffect="non-scaling-stroke"
+                                    />
+                                </svg>
+
+                                <div className="chart-times">
+                                    <span>
+                                        {new Date(
+                                            filteredHistory[0].datetime
+                                        ).toLocaleString(
+                                            "en-IN",
+                                            period === "1D"
+                                                ? { hour: "2-digit", minute: "2-digit" }
+                                                : { day: "numeric", month: "short" }
+                                        )}
+                                    </span>
+
+                                    <span>
+                                        {new Date(
+                                            filteredHistory[
+                                                Math.floor(filteredHistory.length / 2)
+                                            ].datetime
+                                        ).toLocaleString(
+                                            "en-IN",
+                                            period === "1D"
+                                                ? { hour: "2-digit", minute: "2-digit" }
+                                                : { day: "numeric", month: "short" }
+                                        )}
+                                    </span>
+
+                                    <span>
+                                        {new Date(
+                                            filteredHistory[filteredHistory.length - 1].datetime
+                                        ).toLocaleString(
+                                            "en-IN",
+                                            period === "1D"
+                                                ? { hour: "2-digit", minute: "2-digit" }
+                                                : { day: "numeric", month: "short" }
+                                        )}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                )}
             </section>
+
 
 
 
@@ -705,41 +901,45 @@ function StockDetails() {
                     </div>
 
 
+                    
                     <div className="indicator-grid">
 
-                        {indicators.map((indicator) => (
-
-                            <div
-                                className="indicator"
-                                key={indicator.name}
-                            >
-
-                                <span>
-                                    {indicator.name}
-                                </span>
-
-
-                                <strong>
-                                    {indicator.value}
-                                </strong>
-
-
-                                <small
-                                    className={
-                                        indicator.status ===
-                                        "Bullish"
-                                            ? "bullish"
-                                            : "neutral"
-                                    }
+                        {technicalLoading ? (
+                            <p>Loading technical indicators...</p>
+                        ) : technicalError ? (
+                            <p>{technicalError}</p>
+                        ) : (
+                            indicators.map((indicator) => (
+                                <div
+                                    className="indicator"
+                                    key={indicator.name}
                                 >
-                                    {indicator.status}
-                                </small>
+                                    <span>{indicator.name}</span>
 
-                            </div>
+                                    <strong>
+                                        {Number.isFinite(Number(indicator.value)) &&
+                                        indicator.value !== null
+                                            ? Number(indicator.value).toFixed(2)
+                                            : "--"}
+                                    </strong>
 
-                        ))}
+                                    <small
+                                        className={
+                                            indicator.status === "Bullish"
+                                                ? "bullish"
+                                                : indicator.status === "Bearish"
+                                                    ? "bearish"
+                                                    : "neutral"
+                                        }
+                                    >
+                                        {indicator.status}
+                                    </small>
+                                </div>
+                            ))
+                        )}
 
                     </div>
+
 
                 </div>
 

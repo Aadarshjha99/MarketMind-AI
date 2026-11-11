@@ -16,9 +16,12 @@ export const getStockQuote = async (symbol) => {
     return response.data;
 };
 
-export const getStockHistory = async (symbol) => {
+export const getStockHistory = async (symbol, interval = "1d") => {
     const response = await api.get(
-        `/stocks/${encodeURIComponent(symbol)}/history`
+        `/stocks/${encodeURIComponent(symbol)}/history`,
+        {
+            params: { interval }
+        }
     );
 
     return response.data;

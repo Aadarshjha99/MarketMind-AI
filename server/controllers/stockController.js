@@ -72,7 +72,7 @@ const getStockQuote = async (req, res) => {
 const getStockHistory = async (req, res) => {
     try {
         const { symbol } = req.params;
-        const { interval = "1day" } = req.query;
+        const { interval = "1d" } = req.query;
 
         if (!symbol) {
             return res.status(400).json({

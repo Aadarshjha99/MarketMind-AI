@@ -14,16 +14,43 @@ const normalizeQuote = (quote) => {
     };
 };
 
+
 const normalizeHistoricalData = (data) => {
-    return data.map((item) => ({
-        datetime: item.datetime,
-        open: Number(item.open),
-        high: Number(item.high),
-        low: Number(item.low),
-        close: Number(item.close),
-        volume: Number(item.volume)
-    }));
+    if (!Array.isArray(data)) {
+        throw new Error(
+            "Historical data must be an array of candles"
+        );
+    }
+
+    return data.map((item) => {
+        // Upstox V3 format:
+        // [timestamp, open, high, low, close, volume, openInterest]
+
+        if (Array.isArray(item)) {
+            return {
+                datetime: item[0],
+                open: Number(item[1]),
+                high: Number(item[2]),
+                low: Number(item[3]),
+                close: Number(item[4]),
+                volume: Number(item[5] ?? 0),
+                openInterest: Number(item[6] ?? 0)
+            };
+        }
+
+        // Object-based format for other providers
+        return {
+            datetime: item.datetime ?? item.timestamp,
+            open: Number(item.open),
+            high: Number(item.high),
+            low: Number(item.low),
+            close: Number(item.close),
+            volume: Number(item.volume ?? 0),
+            openInterest: Number(item.openInterest ?? 0)
+        };
+    });
 };
+
 
 module.exports = {
     normalizeQuote,
