@@ -1,0 +1,23 @@
+{
+    "symbol": "TCS.NS",
+    "model": "LSTM",
+    "version": "v1",
+    "total_records": 6017,
+    "training_samples": 4753,
+    "testing_samples": 1205,
+    "sequence_length": 60,
+    "features": [
+        "Open",
+        "High",
+        "Low",
+        "Close",
+        "Volume"
+    ],
+    "epochs_completed": 13,
+    "mae": 0.010400586761534214,
+    "rmse": 0.01452173331425055,
+    "directional_accuracy": 47.63485477178423,
+    "baseline_mae": 0.010349549353122711,
+    "baseline_rmse": 0.014508408577084318,
+    "model_beats_baseline": false
+}

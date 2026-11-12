@@ -34,3 +34,32 @@ export const getStockTechnical = async (symbol) => {
 
     return response.data;
 };
+
+export const getStockPrediction = async (symbol) => {
+    const normalizedSymbol = symbol
+        .trim()
+        .toUpperCase()
+        .replace(/\.NS$/, "");
+
+    const response = await api.get(
+        `/stocks/${encodeURIComponent(normalizedSymbol)}/prediction`
+    );
+
+    if (!response.data.success) {
+        throw new Error(
+            response.data.message || "Unable to generate stock prediction."
+        );
+    }
+
+    return response.data.data;
+};
+
+
+
+export const getStockNews = async (symbol) => {
+    const response = await api.get(
+        `/news/${encodeURIComponent(symbol)}`
+    );
+
+    return response.data;
+};
