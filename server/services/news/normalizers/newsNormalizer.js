@@ -1,25 +1,40 @@
-const normalizeNews = (articles, symbol) => {
+
+const normalizeNews = (articles = [], symbol) => {
     return articles
         .map((article) => {
+            const rawDate =
+                article.published_time ??
+                article.publishedAt ??
+                article.published_at ??
+                article.publishedAtUtc;
+
             let publishedAt;
 
-            if (typeof article.published_time === "number") {
-                publishedAt = new Date(article.published_time);
-            } else {
+            if (typeof rawDate === "number") {
                 publishedAt = new Date(
-                    article.publishedAt ||
-                    article.published_at ||
-                    article.publishedAtUtc
+                    rawDate < 1e12 ? rawDate * 1000 : rawDate
                 );
+            } else if (rawDate) {
+                publishedAt = new Date(rawDate);
             }
 
-            if (Number.isNaN(publishedAt.getTime())) {
+            const url = article.article_link || article.url || null;
+
+            if (!url) {
                 console.warn(
-                    `Skipping article with invalid date: ${
-                        article.heading || article.title
+                    `Skipping article without URL: ${
+                        article.heading || article.title || "Untitled"
                     }`
                 );
+                return null;
+            }
 
+            if (!publishedAt || Number.isNaN(publishedAt.getTime())) {
+                console.warn(
+                    `Skipping article with invalid date: ${
+                        article.heading || article.title || "Untitled"
+                    }`
+                );
                 return null;
             }
 
@@ -36,22 +51,25 @@ const normalizeNews = (articles, symbol) => {
                     article.description ||
                     "",
 
+                image:
+                    article.image_url ||
+                    article.image ||
+                    null,
+
                 source:
                     article.source ||
+                    article.publisher ||
                     "Upstox",
 
                 author: article.author || null,
 
-                url:
-                    article.article_link ||
-                    article.url,
+                url,
+                publishedAt,
 
-                publishedAt
+                sentiment: "neutral"
             };
         })
         .filter(Boolean);
 };
 
-module.exports = {
-    normalizeNews
-};
+module.exports = { normalizeNews };
