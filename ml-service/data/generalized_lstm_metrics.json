@@ -1,0 +1,109 @@
+{
+    "model": "Generalized LSTM",
+    "model_name": "generalized_lstm",
+    "stocks": [
+        "TCS",
+        "INFY",
+        "RELIANCE",
+        "HDFCBANK",
+        "ICICIBANK"
+    ],
+    "sequence_length": 60,
+    "features": [
+        "daily_return",
+        "log_return",
+        "open_close_return",
+        "open_gap",
+        "high_low_range",
+        "close_location",
+        "price_to_sma20",
+        "price_to_sma50",
+        "ema20_to_ema50",
+        "rsi14",
+        "macd_pct",
+        "macd_signal_pct",
+        "macd_histogram_pct",
+        "return_2d",
+        "return_5d",
+        "return_10d",
+        "volatility_10d",
+        "volatility_20d",
+        "volume_ratio",
+        "volume_change",
+        "stock_tcs",
+        "stock_infy",
+        "stock_reliance",
+        "stock_hdfcbank",
+        "stock_icicibank"
+    ],
+    "stock_to_index": {
+        "TCS": 0,
+        "INFY": 1,
+        "RELIANCE": 2,
+        "HDFCBANK": 3,
+        "ICICIBANK": 4
+    },
+    "split_date": "2020-10-08",
+    "validation_start_date": "2017-03-06T00:00:00.000000000",
+    "training_samples": 21524,
+    "validation_samples": 4430,
+    "testing_samples": 7530,
+    "epochs_completed": 40,
+    "overall_test_metrics": {
+        "mae": 0.01063243206590414,
+        "rmse": 0.014769133180379868,
+        "directional_accuracy_percent": 50.823373173970786,
+        "zero_return_baseline_mae": 0.010610236786305904,
+        "zero_return_baseline_rmse": 0.014760478399693966,
+        "beats_zero_return_baseline_by_mae": false
+    },
+    "per_stock_test_metrics": {
+        "TCS": {
+            "testing_samples": 1506,
+            "mae": 0.010337227024137974,
+            "rmse": 0.014317874796688557,
+            "directional_accuracy_percent": 49.136786188579016,
+            "zero_return_baseline_mae": 0.010273360647261143,
+            "zero_return_baseline_rmse": 0.014285733923316002,
+            "beats_zero_return_baseline_by_mae": false
+        },
+        "INFY": {
+            "testing_samples": 1506,
+            "mae": 0.011841352097690105,
+            "rmse": 0.01618928648531437,
+            "directional_accuracy_percent": 50.46480743691899,
+            "zero_return_baseline_mae": 0.011815853416919708,
+            "zero_return_baseline_rmse": 0.01617245376110077,
+            "beats_zero_return_baseline_by_mae": false
+        },
+        "RELIANCE": {
+            "testing_samples": 1506,
+            "mae": 0.010719893500208855,
+            "rmse": 0.014848574064671993,
+            "directional_accuracy_percent": 51.59362549800797,
+            "zero_return_baseline_mae": 0.010719509795308113,
+            "zero_return_baseline_rmse": 0.014829384163022041,
+            "beats_zero_return_baseline_by_mae": false
+        },
+        "HDFCBANK": {
+            "testing_samples": 1506,
+            "mae": 0.010039972141385078,
+            "rmse": 0.013946691527962685,
+            "directional_accuracy_percent": 50.73041168658698,
+            "zero_return_baseline_mae": 0.010012275539338589,
+            "zero_return_baseline_rmse": 0.013932173140347004,
+            "beats_zero_return_baseline_by_mae": false
+        },
+        "ICICIBANK": {
+            "testing_samples": 1506,
+            "mae": 0.010223709978163242,
+            "rmse": 0.014441316947340965,
+            "directional_accuracy_percent": 52.191235059760956,
+            "zero_return_baseline_mae": 0.01023018453270197,
+            "zero_return_baseline_rmse": 0.014481439255177975,
+            "beats_zero_return_baseline_by_mae": true
+        }
+    },
+    "model_path": "C:\\Users\\aadarsh jha\\MarketMind-AI\\models\\generalized_lstm.keras",
+    "scaler_path": "C:\\Users\\aadarsh jha\\MarketMind-AI\\models\\generalized_scaler.pkl"
+}

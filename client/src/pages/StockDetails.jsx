@@ -15,31 +15,13 @@ import {
     getStockQuote,
     searchStocks,
     getStockHistory,
-    getStockTechnical
+    getStockTechnical,
+    getStockPrediction,
+    getStockNews
 } from "../services/marketApi";
 
 import "./StockDetails.css";
 
-const news = [
-    {
-        title: "Technology stocks gain as market sentiment improves",
-        source: "Market Intelligence",
-        time: "2 hours ago",
-        sentiment: "Positive"
-    },
-    {
-        title: "IT sector remains in focus amid global market recovery",
-        source: "Financial News",
-        time: "5 hours ago",
-        sentiment: "Positive"
-    },
-    {
-        title: "Investors monitor upcoming technology sector results",
-        source: "Business Desk",
-        time: "Yesterday",
-        sentiment: "Neutral"
-    }
-];
 
 const periodDays = {
     "1D": 1,
@@ -53,6 +35,16 @@ function StockDetails() {
 
     const { symbol } = useParams();
     const navigate = useNavigate();
+
+    const [prediction, setPrediction] = useState(null);
+    const [predictionLoading, setPredictionLoading] = useState(false);
+    const [predictionError, setPredictionError] = useState("");
+
+
+    const [news, setNews] = useState([]);
+    const [newsLoading, setNewsLoading] = useState(false);
+    const [newsError, setNewsError] = useState("");
+
 
     const [quote, setQuote] = useState(null);
     const [stockInfo, setStockInfo] = useState(null);
@@ -295,7 +287,106 @@ function StockDetails() {
         };
     }, [symbol]);
 
-    
+
+    useEffect(() => {
+        let cancelled = false;
+
+        const loadPrediction = async () => {
+            const normalizedSymbol = decodedSymbol.replace(/\.NS$/, "");
+
+            const supportedStocks = [
+                "TCS",
+                "INFY",
+                "RELIANCE",
+                "HDFCBANK",
+                "ICICIBANK"
+            ];
+
+            if (!supportedStocks.includes(normalizedSymbol)) {
+                setPrediction(null);
+                setPredictionError(
+                    "AI prediction is currently available for TCS, INFY, RELIANCE, HDFCBANK and ICICIBANK."
+                );
+                return;
+            }
+
+            try {
+                setPredictionLoading(true);
+                setPredictionError("");
+                setPrediction(null);
+
+                const result = await getStockPrediction(normalizedSymbol);
+
+                if (!cancelled) {
+                    setPrediction(result);
+                }
+            } catch (error) {
+                if (!cancelled) {
+                    setPredictionError(
+                        error.message || "Unable to load AI prediction."
+                    );
+                }
+            } finally {
+                if (!cancelled) {
+                    setPredictionLoading(false);
+                }
+            }
+        };
+
+        if (decodedSymbol) {
+            loadPrediction();
+        }
+
+        return () => {
+            cancelled = true;
+        };
+    }, [decodedSymbol]);
+
+
+
+    useEffect(() => {
+        let cancelled = false;
+
+        const loadNews = async () => {
+            try {
+                setNewsLoading(true);
+                setNewsError("");
+                setNews([]);
+
+                const response = await getStockNews(decodedSymbol);
+
+                if (!response.success || !Array.isArray(response.data)) {
+                    throw new Error("Unexpected news response format.");
+                }
+
+                if (!cancelled) {
+                    setNews(response.data);
+                }
+            } catch (error) {
+                if (!cancelled) {
+                    setNewsError(
+                        error.response?.data?.message ||
+                        error.message ||
+                        "Unable to load stock news."
+                    );
+                }
+            } finally {
+                if (!cancelled) {
+                    setNewsLoading(false);
+                }
+            }
+        };
+
+        if (decodedSymbol && isValidSymbol) {
+            loadNews();
+        }
+
+        return () => {
+            cancelled = true;
+        };
+    }, [decodedSymbol, isValidSymbol]);
+
+
     const indicators = [
         {
             name: "SMA 20",
@@ -337,6 +428,51 @@ function StockDetails() {
                     : "Bearish"
         }
     ];
+
+
+    // --------------------------------
+    // News Sentiment Aggregation
+    // --------------------------------
+
+    const sentimentCounts = news.reduce(
+        (counts, article) => {
+            const sentiment = article.sentiment?.toLowerCase();
+
+            if (sentiment === "positive") {
+                counts.positive++;
+            } else if (sentiment === "negative") {
+                counts.negative++;
+            } else {
+                counts.neutral++;
+            }
+
+            return counts;
+        },
+        {
+            positive: 0,
+            negative: 0,
+            neutral: 0
+        }
+    );
+
+    const totalNews = news.length;
+
+    const getPercentage = (count) =>
+        totalNews ? (count / totalNews) * 100 : 0;
+
+    const overallSentiment =
+        totalNews === 0
+            ? "Unavailable"
+            : sentimentCounts.positive > sentimentCounts.negative
+                ? "Positive"
+                : sentimentCounts.negative > sentimentCounts.positive
+                    ? "Negative"
+                    : sentimentCounts.positive === sentimentCounts.negative &&
+                    sentimentCounts.positive > 0
+                        ? "Mixed"
+                        : "Neutral";
+
+    const overallSentimentClass = overallSentiment.toLowerCase();
 
 
     // --------------------------------
@@ -945,174 +1081,317 @@ function StockDetails() {
 
 
 
-                {/* AI */}
-
+                {/* LSTM AI Prediction */}
                 <div className="details-card ai-analysis-card">
 
                     <div className="details-card-header">
-
                         <div>
-
-                            <span>
-                                MARKETMIND AI
-                            </span>
-
-                            <h3>
-                                AI Insight
-                            </h3>
-
+                            <span>MARKETMIND AI · LSTM MODEL</span>
+                            <h3>AI Price Prediction</h3>
                         </div>
-
 
                         <Sparkles
                             size={18}
                             className="ai-sparkle"
                         />
-
                     </div>
-
 
                     <div className="ai-insight-content">
 
-                        <div className="ai-confidence">
-
-                            <div>
-
-                                <span>
-                                    Confidence
-                                </span>
-
-                                <strong>
-                                    78%
-                                </strong>
-
+                        {predictionLoading ? (
+                            <div className="market-data-loading">
+                                <p>Analyzing historical market data...</p>
+                                <small>Generating next-day prediction</small>
                             </div>
-
-
-                            <div className="confidence-bar">
-                                <div></div>
+                        ) : predictionError ? (
+                            <div className="market-data-loading">
+                                {predictionError}
                             </div>
+                        ) : prediction ? (
+                            <>
+                                <div className="ai-price-grid">
+                                    <div className="ai-price-item">
+                                        <span>Last Historical Close</span>
+                                        <strong>
+                                            ₹{Number(prediction.current_price).toLocaleString("en-IN", {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2
+                                            })}
+                                        </strong>
+                                    </div>
 
-                        </div>
+                                    <div className="ai-price-item">
+                                        <span>Predicted Next Session Price</span>
+                                        <strong>
+                                            ₹{Number(prediction.predicted_price).toLocaleString("en-IN", {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2
+                                            })}
+                                        </strong>
+                                    </div>
+                                </div>
 
+                                <div className="ai-signal">
+                                    {prediction.direction === "UP" ? (
+                                        <TrendingUp size={16} />
+                                    ) : (
+                                        <ArrowDownRight size={16} />
+                                    )}
 
-                        <p>
+                                    <span>
+                                        {prediction.direction}
+                                        {" · "}
+                                        {Number(prediction.predicted_return).toFixed(2)}%
+                                    </span>
+                                </div>
 
-                            {displaySymbol} is showing
-                            moderately bullish momentum.
-                            The stock is currently trading
-                            above its 20-day and 50-day
-                            moving averages, while RSI
-                            remains below overbought territory.
+                                <p>
+                                    The LSTM model predicts a{" "}
+                                    {prediction.direction.toLowerCase()} movement for the next
+                                    trading session, based on historical market data.
+                                </p>
 
-                        </p>
+                                <p className="ai-reference-note">
+                                    The historical closing price above is the reference price
+                                    used by the prediction model. It is not the live market quote.
+                                </p>
 
+                                <div className="ai-model-info">
+                                    <small>
+                                        Model: {prediction.model}
+                                    </small>
 
-                        <div className="ai-signal">
+                                    <small>
+                                        Horizon: {prediction.prediction_horizon}
+                                    </small>
 
-                            <TrendingUp size={16} />
+                                    <small>
+                                        Data as of: {prediction.last_data_date}
+                                    </small>
+                                </div>
 
-                            <span>
-                                Moderately Bullish
-                            </span>
+                                <p className="ai-disclaimer">
+                                    {prediction.disclaimer ||
+                                        "Experimental model output. This is not financial advice or a guaranteed prediction."}
+                                </p>
 
-                        </div>
+                            </>
+                        ) : (
+                            <p>No prediction available.</p>
+                        )}
 
                     </div>
-
                 </div>
 
             </section>
 
 
 
-            {/* News */}
+            {/* Dynamic Stock News */}
 
             <section className="details-card stock-news-card">
 
                 <div className="details-card-header">
-
                     <div>
-
-                        <span>
-                            MARKET INTELLIGENCE
-                        </span>
-
-                        <h3>
-                            Latest {displaySymbol} News
-                        </h3>
-
+                        <span>MARKET INTELLIGENCE</span>
+                        <h3>Latest {displaySymbol} News</h3>
                     </div>
 
-
                     <Newspaper size={18} />
-
                 </div>
 
-
                 <div className="stock-news-list">
+                    {!newsLoading && !newsError && totalNews > 0 && (
+                        <div className="news-sentiment-dashboard">
 
-                    {news.map((article, index) => (
+                            <div className="sentiment-dashboard-header">
 
-                        <article
-                            className="stock-news-item"
-                            key={index}
-                        >
-
-                            <div className="news-number">
-                                0{index + 1}
-                            </div>
-
-
-                            <div className="stock-news-content">
-
-                                <h4>
-                                    {article.title}
-                                </h4>
-
-
-                                <div>
-
-                                    <span>
-                                        {article.source}
+                                <div className="sentiment-overview">
+                                    <span className="sentiment-eyebrow">
+                                        OVERALL NEWS SENTIMENT
                                     </span>
 
-                                    <span>
-                                        •
-                                    </span>
+                                    <h2 className={`overall-sentiment ${overallSentiment.toLowerCase()}`}>
+                                        {overallSentiment}
+                                    </h2>
 
-                                    <span>
-                                        {article.time}
-                                    </span>
+                                    <p>
+                                        Based on {totalNews} analyzed news articles
+                                    </p>
+                                </div>
 
-                                    <span
-                                        className={
-                                            article.sentiment ===
-                                            "Positive"
-                                                ? "news-positive"
-                                                : "news-neutral"
-                                        }
-                                    >
-                                        {article.sentiment}
-                                    </span>
-
+                                <div className="sentiment-article-count">
+                                    <span>Articles analyzed</span>
+                                    <strong>{totalNews}</strong>
                                 </div>
 
                             </div>
 
+                            {/* Distribution Bar */}
 
-                            <ArrowUpRight
-                                size={16}
-                                className="news-arrow"
-                            />
+                            <div
+                                className="sentiment-distribution"
+                                role="img"
+                                aria-label={`Positive ${sentimentCounts.positive}, Neutral ${sentimentCounts.neutral}, Negative ${sentimentCounts.negative}`}
+                            >
+                                {sentimentCounts.positive > 0 && (
+                                    <div
+                                        className="distribution-positive"
+                                        style={{ width: `${getPercentage(sentimentCounts.positive)}%` }}
+                                    />
+                                )}
 
-                        </article>
+                                {sentimentCounts.neutral > 0 && (
+                                    <div
+                                        className="distribution-neutral"
+                                        style={{ width: `${getPercentage(sentimentCounts.neutral)}%` }}
+                                    />
+                                )}
 
-                    ))}
+                                {sentimentCounts.negative > 0 && (
+                                    <div
+                                        className="distribution-negative"
+                                        style={{ width: `${getPercentage(sentimentCounts.negative)}%` }}
+                                    />
+                                )}
+                            </div>
+
+                            {/* Legend */}
+
+                            <div className="sentiment-legend">
+
+                                <div className="legend-item">
+                                    <span className="legend-dot positive-dot" />
+                                    <span>Positive</span>
+                                    <strong>{sentimentCounts.positive}</strong>
+                                    <small>{getPercentage(sentimentCounts.positive).toFixed(0)}%</small>
+                                </div>
+
+                                <div className="legend-item">
+                                    <span className="legend-dot neutral-dot" />
+                                    <span>Neutral</span>
+                                    <strong>{sentimentCounts.neutral}</strong>
+                                    <small>{getPercentage(sentimentCounts.neutral).toFixed(0)}%</small>
+                                </div>
+
+                                <div className="legend-item">
+                                    <span className="legend-dot negative-dot" />
+                                    <span>Negative</span>
+                                    <strong>{sentimentCounts.negative}</strong>
+                                    <small>{getPercentage(sentimentCounts.negative).toFixed(0)}%</small>
+                                </div>
+
+                            </div>
+
+                            <div className="sentiment-disclaimer">
+                                Sentiment reflects the tone of available news articles.
+                                It does not predict stock-price movement.
+                            </div>
+
+                        </div>
+                    )}
+                    {newsLoading ? (
+                        <div className="market-data-loading">
+                            Loading latest news...
+                        </div>
+                    ) : newsError ? (
+                        <div className="market-data-loading">
+                            {newsError}
+                        </div>
+                    ) : news.length === 0 ? (
+                        <div className="market-data-loading">
+                            No news articles available for {displaySymbol}.
+                        </div>
+                    ) : (
+                        news.map((article, index) => (
+
+                            <article
+                                className="stock-news-item"
+                                key={article._id || article.url}
+                            >
+
+                                <div className="news-number">
+                                    {String(index + 1).padStart(2, "0")}
+                                </div>
+
+                                <div className="stock-news-content">
+
+                                    <h4>{article.title}</h4>
+
+                                    {article.description && (
+                                        <p className="news-description">
+                                            {article.description}
+                                        </p>
+                                    )}
+
+                                    <div>
+                                        <span>{article.source || "Unknown source"}</span>
+
+                                        <span>•</span>
+
+                                        <span>
+                                            {article.publishedAt
+                                                ? new Date(article.publishedAt).toLocaleString(
+                                                    "en-IN",
+                                                    {
+                                                        day: "numeric",
+                                                        month: "short",
+                                                        year: "numeric",
+                                                        hour: "2-digit",
+                                                        minute: "2-digit"
+                                                    }
+                                                )
+                                                : "Date unavailable"}
+                                        </span>
+
+
+                                        <span
+                                            className={`news-sentiment-badge ${
+                                                ["positive", "negative", "neutral"].includes(
+                                                    article.sentiment?.toLowerCase()
+                                                )
+                                                    ? article.sentiment.toLowerCase()
+                                                    : "neutral"
+                                            }`}
+                                        >
+                                            {article.sentiment || "Neutral"}
+                                            {article.sentimentScore != null && (
+                                                <span className="sentiment-confidence">
+                                                    {(Number(article.sentimentScore) * 100).toFixed(1)}%
+                                                </span>
+                                            )}
+                                        </span>
+
+                                    </div>
+
+                                    {article.url && (
+                                        <a
+                                            href={article.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="news-read-link"
+                                        >
+                                            Read Article
+                                            <ArrowUpRight size={14} />
+                                        </a>
+                                    )}
+
+                                </div>
+
+                                <ArrowUpRight
+                                    size={16}
+                                    className="news-arrow"
+                                />
+
+                            </article>
+
+                        ))
+                    )}
 
                 </div>
 
             </section>
+
 
         </div>
     );
