@@ -1,11 +1,119 @@
+
+/* Global Reset */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     font-family: Arial, sans-serif;
     background: #0b0f19;
     color: #ffffff;
+    min-width: 320px;
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+::selection {
+    background: rgba(79, 140, 255, 0.3);
+    color: #ffffff;
+}
+
+
+/* =================================
+   MARKETMIND GLOBAL THEME
+================================= */
+
+:root {
+    color-scheme: dark;
+
+    --app-bg: #0b0f19;
+    --surface-bg: #111827;
+    --surface-secondary: #0f131c;
+    --surface-hover: #1a2537;
+
+    --border-color: #263246;
+
+    --text-primary: #edf1f9;
+    --text-secondary: #98a5b8;
+    --text-muted: #8290a5;
+
+    --accent-color: #687cff;
+}
+
+/* Light theme */
+
+:root[data-theme="light"] {
+    color-scheme: light;
+
+    --app-bg: #f3f5f9;
+    --surface-bg: #ffffff;
+    --surface-secondary: #f7f8fc;
+    --surface-hover: #edf0f7;
+
+    --border-color: #e0e5ed;
+
+    --text-primary: #182235;
+    --text-secondary: #526078;
+    --text-muted: #748197;
+
+    --accent-color: #5268e8;
+}
+
+/* System theme */
+
+@media (prefers-color-scheme: light) {
+    :root[data-theme="system"] {
+        color-scheme: light;
+
+        --app-bg: #f3f5f9;
+        --surface-bg: #ffffff;
+        --surface-secondary: #f7f8fc;
+        --surface-hover: #edf0f7;
+
+        --border-color: #e0e5ed;
+
+        --text-primary: #182235;
+        --text-secondary: #526078;
+        --text-muted: #748197;
+
+        --accent-color: #5268e8;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    :root[data-theme="system"] {
+        color-scheme: dark;
+    }
+}
+
+/* Apply global colors */
+
+body {
+    background: var(--app-bg);
+    color: var(--text-primary);
 }

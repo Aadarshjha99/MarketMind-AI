@@ -20,6 +20,12 @@ import {
     getStockNews
 } from "../services/marketApi";
 
+import {
+    getWatchlist,
+    addToWatchlist,
+    removeFromWatchlist
+} from "../services/watchlistApi";
+
 import "./StockDetails.css";
 
 
@@ -48,6 +54,10 @@ function StockDetails() {
 
     const [quote, setQuote] = useState(null);
     const [stockInfo, setStockInfo] = useState(null);
+
+    const [isInWatchlist, setIsInWatchlist] = useState(false);
+    const [watchlistLoading, setWatchlistLoading] = useState(true);
+    const [watchlistUpdating, setWatchlistUpdating] = useState(false);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -189,6 +199,48 @@ function StockDetails() {
 
     }, [symbol, decodedSymbol, isValidSymbol]);
 
+// --------------------------------
+// Load Watchlist Status
+// --------------------------------
+
+useEffect(() => {
+    let cancelled = false;
+
+    const loadWatchlistStatus = async () => {
+        try {
+            setWatchlistLoading(true);
+
+            const data = await getWatchlist();
+
+            if (!cancelled) {
+                const exists = data.some(
+                    (item) =>
+                        item.symbol?.toUpperCase() ===
+                        decodedSymbol
+                );
+
+                setIsInWatchlist(exists);
+            }
+        } catch (error) {
+            console.error(
+                "Failed to load watchlist status:",
+                error
+            );
+        } finally {
+            if (!cancelled) {
+                setWatchlistLoading(false);
+            }
+        }
+    };
+
+    if (decodedSymbol && isValidSymbol) {
+        loadWatchlistStatus();
+    }
+
+    return () => {
+        cancelled = true;
+    };
+}, [decodedSymbol, isValidSymbol]);
 
     useEffect(() => {
         let cancelled = false;
@@ -386,6 +438,36 @@ function StockDetails() {
         };
     }, [decodedSymbol, isValidSymbol]);
 
+// --------------------------------
+// Toggle Watchlist
+// --------------------------------
+
+const handleWatchlistToggle = async () => {
+    if (watchlistLoading || watchlistUpdating || !displaySymbol) {
+        return;
+    }
+
+    try {
+        setWatchlistUpdating(true);
+
+        if (isInWatchlist) {
+            await removeFromWatchlist(displaySymbol);
+            setIsInWatchlist(false);
+        } else {
+            await addToWatchlist(displaySymbol);
+            setIsInWatchlist(true);
+        }
+    } catch (error) {
+        console.error("Watchlist update failed:", error);
+
+        alert(
+            error.response?.data?.message ||
+            "Unable to update watchlist. Please try again."
+        );
+    } finally {
+        setWatchlistUpdating(false);
+    }
+};
 
     const indicators = [
         {
@@ -673,9 +755,25 @@ function StockDetails() {
                 </div>
 
 
-                <button className="add-watchlist">
-                    <Star size={16} />
-                    Add to Watchlist
+                <button
+                    className={`add-watchlist ${
+                        isInWatchlist ? "watchlist-added" : ""
+                    }`}
+                    onClick={handleWatchlistToggle}
+                    disabled={watchlistLoading || watchlistUpdating}
+                >
+                    <Star
+                        size={16}
+                        fill={isInWatchlist ? "currentColor" : "none"}
+                    />
+
+                    {watchlistLoading
+                        ? "Checking..."
+                        : watchlistUpdating
+                            ? "Updating..."
+                            : isInWatchlist
+                                ? "Added to Watchlist"
+                                : "Add to Watchlist"}
                 </button>
 
             </section>

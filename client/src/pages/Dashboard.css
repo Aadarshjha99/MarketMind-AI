@@ -581,3 +581,130 @@
         gap: 16px;
     }
 }
+
+/* =================================
+   THEME SUPPORT
+================================= */
+
+.dashboard {
+    color: var(--text-primary);
+}
+
+.dashboard-header h2,
+.market-value,
+.sentiment-score span,
+.stock-price strong,
+.card-header h3,
+.news-content h4 {
+    color: var(--text-primary);
+}
+
+.dashboard-subtitle,
+.market-card-top,
+.card-label,
+.market-change span,
+.sentiment-score small,
+.sentiment-content p,
+.stock-identity span,
+.news-meta {
+    color: var(--text-secondary);
+}
+
+.market-status,
+.chart-periods {
+    background: var(--surface-secondary);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+.market-card,
+.dashboard-card {
+    background: var(--surface-bg);
+    border-color: var(--border-color);
+}
+
+.market-card:hover {
+    border-color: var(--text-muted);
+}
+
+.chart-periods button {
+    color: var(--text-secondary);
+}
+
+.chart-periods button:hover {
+    color: var(--text-primary);
+}
+
+.chart-periods button.active {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+}
+
+.chart-placeholder {
+    border-color: var(--border-color);
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 61px,
+        var(--border-color) 62px
+    );
+}
+
+.stock-row,
+.news-item {
+    border-color: var(--border-color);
+}
+
+.stock-symbol,
+.news-symbol {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+}
+
+.sentiment-bar {
+    background: var(--border-color);
+}
+.dashboard {
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 28px 32px 40px;
+    box-sizing: border-box;
+}
+
+
+/* Dashboard dynamic data states */
+
+.dashboard-data-message {
+    min-height: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: var(--text-muted);
+    font-size: 12px;
+    text-align: center;
+    line-height: 1.6;
+}
+
+.dashboard-clickable {
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.dashboard-clickable:hover {
+    background: var(--surface-hover);
+}
+
+.dashboard-sentiment-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-top: 15px;
+    color: var(--text-secondary);
+    font-size: 10px;
+}
+
+.dashboard .sentiment-bar > div {
+    transition: width 0.3s ease;
+}
