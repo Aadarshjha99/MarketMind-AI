@@ -54,8 +54,6 @@ export const getStockPrediction = async (symbol) => {
     return response.data.data;
 };
 
-
-
 export const getStockNews = async (symbol) => {
     const response = await api.get(
         `/news/${encodeURIComponent(symbol)}`

@@ -1,13 +1,13 @@
+
 import { NavLink } from "react-router-dom";
 import "./Sidebar.css";
+
 import {
     LayoutDashboard,
     TrendingUp,
     Star,
     BriefcaseBusiness,
-    Newspaper,
-    Sparkles,
-    BarChart3,
+    BrainCircuit,
     Settings
 } from "lucide-react";
 
@@ -15,7 +15,7 @@ const navigation = [
     {
         section: "MAIN",
         items: [
-            { name: "Dashboard", path: "/", icon: LayoutDashboard },
+            { name: "Dashboard", path: "/app", icon: LayoutDashboard },
             { name: "Markets", path: "/markets", icon: TrendingUp },
             { name: "Watchlist", path: "/watchlist", icon: Star },
             { name: "Portfolio", path: "/portfolio", icon: BriefcaseBusiness }
@@ -24,9 +24,11 @@ const navigation = [
     {
         section: "INTELLIGENCE",
         items: [
-            { name: "News", path: "/news", icon: Newspaper },
-            { name: "AI Insights", path: "/ai-insights", icon: Sparkles },
-            { name: "Analytics", path: "/analytics", icon: BarChart3 }
+            {
+                name: "Stock Intelligence",
+                path: "/intelligence",
+                icon: BrainCircuit
+            }
         ]
     },
     {

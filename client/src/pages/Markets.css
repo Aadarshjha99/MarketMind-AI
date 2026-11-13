@@ -613,3 +613,129 @@
     color: #9AA4B2;
     font-size: 12px;
 }
+
+/* Active Watchlist Star */
+
+.watch-button {
+    transition: all 0.2s ease;
+}
+
+.watch-button-active {
+    color: #f5c451;
+}
+
+.watch-button-active:hover {
+    color: #ffd66b;
+    transform: scale(1.1);
+}
+
+.watch-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+/* =================================
+   THEME SUPPORT
+================================= */
+.markets-page {
+    color: var(--text-primary);
+}
+
+.markets-header h2,
+.overview-item strong,
+.table-header h3,
+.stock-name-cell strong,
+.price-cell {
+    color: var(--text-primary);
+}
+
+.markets-header p,
+.overview-item span,
+.table-label,
+.stock-count,
+.sector-cell,
+.volume-cell,
+.stock-name-cell span {
+    color: var(--text-secondary);
+}
+
+.market-live-status,
+.markets-search,
+.filter-button {
+    background: var(--surface-secondary);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+.markets-search input {
+    color: var(--text-primary);
+}
+
+.markets-search input::placeholder {
+    color: var(--text-muted);
+}
+
+.filter-button:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+}
+
+.overview-item,
+.markets-table-card {
+    background: var(--surface-bg);
+    border-color: var(--border-color);
+}
+
+.table-heading {
+    background: var(--surface-secondary);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+.stock-data-row {
+    border-color: var(--border-color);
+}
+
+.stock-data-row:hover,
+.stock-row:hover {
+    background: var(--surface-hover);
+}
+
+.market-stock-icon,
+.overview-index {
+    background: var(--surface-hover);
+}
+
+.stock-name-cell strong,
+.price-cell {
+    color: var(--text-primary);
+}
+
+.watch-button:hover {
+    background: var(--surface-hover);
+}
+
+.stock-search-results {
+    background: var(--surface-bg);
+    border-color: var(--border-color);
+}
+
+.search-result-item {
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.search-result-item:hover {
+    background: var(--surface-hover);
+}
+
+.search-result-item span,
+.search-result-message {
+    color: var(--text-secondary);
+}
+.markets-page {
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 28px 32px 40px;
+    box-sizing: border-box;
+}

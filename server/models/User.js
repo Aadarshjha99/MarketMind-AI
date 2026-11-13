@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
@@ -28,6 +29,26 @@ const userSchema = new mongoose.Schema(
             type: String,
             enum: ["user", "admin"],
             default: "user"
+        },
+
+        preferences: {
+            theme: {
+                type: String,
+                enum: ["dark", "light", "system"],
+                default: "dark"
+            },
+            emailNotifications: {
+                type: Boolean,
+                default: true
+            },
+            priceAlerts: {
+                type: Boolean,
+                default: true
+            },
+            newsNotifications: {
+                type: Boolean,
+                default: true
+            }
         }
     },
     {

@@ -5,6 +5,10 @@ const authRoutes = require("./routes/authRoutes");
 const stockRoutes = require("./routes/stockRoutes");
 const newsRoutes = require("./routes/newsRoutes");
 
+const watchlistRoutes = require("./routes/watchlistRoutes");
+
+const portfolioRoutes = require("./routes/portfolioRoutes");
+
 const app = express();
 
 // Middleware
@@ -15,6 +19,8 @@ app.use(express.json());
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/stocks", stockRoutes);
 app.use("/api/v1/news",newsRoutes);
+app.use("/api/v1/watchlist", watchlistRoutes);
+app.use("/api/v1/portfolio", portfolioRoutes);
 
 // Health check
 app.get("/api/v1/health", (req, res) => {

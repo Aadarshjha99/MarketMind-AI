@@ -41,7 +41,7 @@ const getQuote = async (symbol) => {
             (item) =>
                 item.instrument_token === instrumentKey
         );
-
+        console.log("RAW UPSTOX QUOTE:", JSON.stringify(stockData, null, 2));
         if (!stockData) {
             stockData = responseData[instrumentKey];
         }
@@ -86,77 +86,71 @@ const getQuote = async (symbol) => {
             );
         }
 
-        // =======================================
-        // PREVIOUS CLOSING PRICE
-        // =======================================
 
-        let previousClose = Number(
-            stockData.prev_ohlc?.close
+    // =======================================
+    // PREVIOUS CLOSING PRICE
+    // =======================================
+
+    let previousClose = Number(
+        stockData.prev_ohlc?.close
+    );
+
+    // Upstox may not return prev_ohlc.
+    // Fetch daily candles to identify the previous
+    // completed trading session.
+
+    if (
+        !Number.isFinite(previousClose) ||
+        previousClose <= 0
+    ) {
+        const dailyCandles = await getHistoricalData(
+            symbol,
+            "1d"
         );
 
-        // If previous OHLC is unavailable,
-        // fetch the previous completed daily candle.
+        const validDailyCandles = dailyCandles
+            .filter((candle) => {
+                const close = Number(candle[4]);
 
-        if (
-            !Number.isFinite(previousClose) ||
-            previousClose <= 0
-        ) {
-            const candles = await getHistoricalData(
-                symbol,
-                "1d"
+                return (
+                    Array.isArray(candle) &&
+                    Number.isFinite(close) &&
+                    close > 0
+                );
+            })
+            .sort(
+                (a, b) =>
+                    new Date(b[0]).getTime() -
+                    new Date(a[0]).getTime()
             );
 
-            const liveTimestamp = Number(liveOHLC.ts);
-
-            const referenceTime =
-                Number.isFinite(liveTimestamp)
-                    ? liveTimestamp
-                    : Date.now();
-
-            const previousCandles = candles
-                .filter((candle) => {
-                    if (!Array.isArray(candle)) {
-                        return false;
-                    }
-
-                    const candleTime = new Date(
-                        candle[0]
-                    ).getTime();
-
-                    const candleClose = Number(
-                        candle[4]
-                    );
-
-                    return (
-                        Number.isFinite(candleTime) &&
-                        candleTime < referenceTime &&
-                        Number.isFinite(candleClose) &&
-                        candleClose > 0
-                    );
-                })
-                .sort(
-                    (a, b) =>
-                        new Date(b[0]).getTime() -
-                        new Date(a[0]).getTime()
-                );
-
-            if (previousCandles.length > 0) {
-                previousClose = Number(
-                    previousCandles[0][4]
-                );
-            } else {
-                previousClose = Number(liveOHLC.close);
-            }
-        }
-
-        if (
-            !Number.isFinite(previousClose) ||
-            previousClose <= 0
-        ) {
+        if (validDailyCandles.length < 2) {
             throw new Error(
-                `Previous closing price unavailable for ${symbol}`
+                `Insufficient daily candles to calculate previous close for ${symbol}`
             );
         }
+
+        // Most recent completed session.
+        const latestCompletedClose = Number(
+            validDailyCandles[0][4]
+        );
+
+        // Previous trading session.
+        const previousSessionClose = Number(
+            validDailyCandles[1][4]
+        );
+
+        // Outside market hours, last_price can equal
+        // the latest completed session's closing price.
+        // Compare against the previous session close.
+        previousClose = previousSessionClose;
+
+        console.log("Daily candle reference:", {
+            latestCompletedClose,
+            previousSessionClose
+        });
+    }
+
 
         // =======================================
         // PRICE CHANGE CALCULATION
@@ -272,23 +266,76 @@ const getHistoricalData = async (
     // INTRADAY DATA (5 MINUTES)
     // =======================================
 
+
     if (interval === "5m") {
-        const url =
+        // First, try today's intraday candles.
+        const intradayUrl =
             `https://api.upstox.com/v3/historical-candle/` +
             `intraday/${encodedInstrumentKey}/minutes/5`;
 
-        const response = await upstoxClient.get(url);
+        const intradayResponse = await upstoxClient.get(intradayUrl);
 
-        const candles = response.data?.data?.candles;
+        const intradayCandles =
+            intradayResponse.data?.data?.candles;
 
-        if (!Array.isArray(candles)) {
+        if (!Array.isArray(intradayCandles)) {
             throw new Error(
                 `Invalid intraday data response for ${symbol}`
             );
         }
 
-        return candles;
+        // If today's candles exist, use them.
+        if (intradayCandles.length > 0) {
+            return intradayCandles;
+        }
+
+        // Otherwise, fetch historical 5-minute candles.
+        // This handles pre-market hours, weekends and holidays.
+        const toDate = new Date();
+        const fromDate = new Date();
+
+        fromDate.setDate(fromDate.getDate() - 7);
+
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+
+            const month = String(
+                date.getMonth() + 1
+            ).padStart(2, "0");
+
+            const day = String(
+                date.getDate()
+            ).padStart(2, "0");
+
+            return `${year}-${month}-${day}`;
+        };
+
+        const historicalUrl =
+            `https://api.upstox.com/v3/historical-candle/` +
+            `${encodedInstrumentKey}/minutes/5/` +
+            `${formatDate(toDate)}/` +
+            `${formatDate(fromDate)}`;
+
+        const historicalResponse =
+            await upstoxClient.get(historicalUrl);
+
+        const historicalCandles =
+            historicalResponse.data?.data?.candles;
+
+        if (!Array.isArray(historicalCandles)) {
+            throw new Error(
+                `Invalid historical intraday response for ${symbol}`
+            );
+        }
+
+        console.log(
+            `Using historical 5-minute candles for ${symbol}:`,
+            historicalCandles.length
+        );
+
+        return historicalCandles;
     }
+
 
     // =======================================
     // HISTORICAL INTERVAL CONFIGURATION

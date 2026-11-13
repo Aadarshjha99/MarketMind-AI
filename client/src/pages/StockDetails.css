@@ -1274,3 +1274,215 @@
         font-size: 20px;
     }
 }
+.add-watchlist {
+    transition: all 0.2s ease;
+}
+
+.add-watchlist.watchlist-added {
+    color: #f5c451;
+    border-color: rgba(245, 196, 81, 0.4);
+}
+
+.add-watchlist.watchlist-added:hover {
+    background: rgba(245, 196, 81, 0.1);
+}
+
+.add-watchlist:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* =========================================
+   STOCK DETAILS — GLOBAL THEME SUPPORT
+========================================= */
+
+/* Page and general text */
+.stock-details-page {
+    color: var(--text-primary);
+}
+
+.back-button {
+    color: var(--text-muted);
+}
+
+.back-button:hover {
+    color: var(--text-primary);
+}
+
+/* Stock heading */
+.large-stock-icon {
+    background: var(--surface-hover);
+    border-color: var(--border-color);
+}
+
+.stock-title-row h2,
+.stock-current-price > span,
+.chart-price-summary strong {
+    color: var(--text-primary);
+}
+
+.stock-heading p,
+.chart-price-summary span {
+    color: var(--text-secondary);
+}
+
+.stock-sector {
+    color: var(--text-muted);
+}
+
+/* Watchlist button */
+.add-watchlist {
+    background: var(--surface-bg);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+.add-watchlist:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+}
+
+/* Price overview */
+.stock-price-section,
+.stock-chart-card,
+.details-card,
+.news-sentiment-dashboard {
+    background: var(--surface-secondary);
+    border-color: var(--border-color);
+}
+
+.price-meta span,
+.chart-label,
+.details-card-header span,
+.indicator span {
+    color: var(--text-muted);
+}
+
+.price-meta strong,
+.indicator strong,
+.stock-chart-header h3,
+.details-card-header h3 {
+    color: var(--text-primary);
+}
+
+/* Chart controls */
+.stock-chart-periods {
+    background: var(--surface-bg);
+    border-color: var(--border-color);
+}
+
+.stock-chart-periods button {
+    color: var(--text-muted);
+}
+
+.stock-chart-periods button.active {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+}
+
+.stock-chart-area {
+    border-bottom-color: var(--border-color);
+    background: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 72px,
+        var(--border-color) 73px
+    );
+}
+
+.chart-values,
+.chart-times {
+    color: var(--text-muted);
+}
+
+/* Technical indicators */
+.indicator {
+    border-top-color: var(--border-color);
+}
+
+/* AI analysis */
+.ai-analysis-card {
+    background: linear-gradient(
+        135deg,
+        var(--surface-secondary),
+        var(--surface-bg)
+    );
+}
+
+.ai-confidence span,
+.ai-insight-content p,
+.ai-model-info,
+.ai-disclaimer {
+    color: var(--text-secondary);
+}
+
+.confidence-bar {
+    background: var(--border-color);
+}
+
+/* Stock news */
+.stock-news-item {
+    border-color: var(--border-color);
+}
+
+.stock-news-content h4 {
+    color: var(--text-primary);
+}
+
+.stock-news-content > div,
+.news-arrow {
+    color: var(--text-muted);
+}
+
+.news-description {
+    color: var(--text-secondary);
+}
+
+/* Sentiment dashboard */
+.news-sentiment-dashboard {
+    color: var(--text-primary);
+}
+
+.sentiment-eyebrow,
+.sentiment-label,
+.sentiment-overview p,
+.sentiment-article-count span,
+.sentiment-disclaimer {
+    color: var(--text-muted);
+}
+
+.sentiment-article-count strong,
+.legend-item strong {
+    color: var(--text-primary);
+}
+
+.legend-item {
+    color: var(--text-secondary);
+}
+
+.sentiment-legend {
+    border-bottom-color: var(--border-color);
+}
+
+.sentiment-distribution {
+    background: var(--border-color);
+}
+
+/* Sentiment colors remain semantic:
+   positive = green, negative = red, neutral = grey */
+
+/* Smooth theme transitions */
+.stock-details-page,
+.stock-price-section,
+.stock-chart-card,
+.details-card,
+.news-sentiment-dashboard,
+.add-watchlist,
+.stock-chart-periods,
+.indicator,
+.stock-news-item {
+    transition:
+        background-color 0.25s ease,
+        color 0.25s ease,
+        border-color 0.25s ease;
+}

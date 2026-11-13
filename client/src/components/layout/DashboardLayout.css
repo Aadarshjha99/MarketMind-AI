@@ -18,3 +18,29 @@
 .main-content {
     min-height: calc(100vh - 76px);
 }
+
+/* Theme-aware dashboard layout */
+
+.app-layout {
+    background: var(--app-bg);
+    color: var(--text-primary);
+    transition: background 0.25s ease, color 0.25s ease;
+}
+
+.main-area {
+    background: var(--app-bg);
+}
+
+.main-content {
+    background: var(--app-bg);
+    color: var(--text-primary);
+    transition: background 0.25s ease, color 0.25s ease;
+}
+
+/* Responsive layout */
+
+@media (max-width: 768px) {
+    .main-area {
+        margin-left: 0;
+    }
+}

@@ -1,0 +1,601 @@
+
+.intelligence-page {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    color: var(--text-primary, #e8edf7);
+}
+
+.intelligence-heading,
+.intelligence-section-heading,
+.intelligence-stock-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.intelligence-heading h1 {
+    margin: 5px 0;
+    font-size: 28px;
+}
+
+.intelligence-heading p,
+.intelligence-stock-title p {
+    color: #929bad;
+    margin: 5px 0 0;
+}
+
+.intelligence-eyebrow,
+.intelligence-section-heading span {
+    color: #779eff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+}
+
+.intelligence-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 17px;
+    min-height: 56px;
+    background: #151d2b;
+    border: 1px solid #29354a;
+    border-radius: 12px;
+    z-index: 5;
+}
+
+.intelligence-search input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #fff;
+    font-size: 14px;
+}
+
+.intelligence-search input::placeholder {
+    color: #78859a;
+}
+
+.intelligence-search > span {
+    color: #8c9ab0;
+    font-size: 12px;
+}
+
+.intelligence-suggestions {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: #192335;
+    border: 1px solid #34435c;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px #0005;
+}
+
+.intelligence-suggestions button {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 110px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 17px;
+    text-align: left;
+    color: #e8edf7;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+}
+
+.intelligence-suggestions button:hover {
+    background: #263650;
+}
+
+.intelligence-suggestions span,
+.intelligence-suggestions small {
+    color: #9aa8bd;
+}
+
+.intelligence-empty {
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 30px;
+    background: #151d2b;
+    border: 1px solid #29354a;
+    border-radius: 16px;
+}
+
+.intelligence-empty svg {
+    color: #779eff;
+}
+
+.intelligence-empty h2 {
+    margin-bottom: 5px;
+}
+
+.intelligence-empty p {
+    max-width: 480px;
+    color: #929bad;
+    line-height: 1.6;
+}
+
+.intelligence-card {
+    padding: 23px;
+    background: #151d2b;
+    border: 1px solid #29354a;
+    border-radius: 15px;
+    min-width: 0;
+}
+
+.intelligence-stock-title h2 {
+    font-size: 25px;
+    margin: 7px 0 0;
+}
+
+.intelligence-stock-title > div > span {
+    color: #779eff;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.intelligence-watchlist {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    color: #c5d2e7;
+    background: #202d42;
+    border: 1px solid #34435c;
+    border-radius: 9px;
+    cursor: pointer;
+}
+
+.intelligence-watchlist.active {
+    color: #f6c75b;
+    border-color: #826b37;
+}
+
+.intelligence-watchlist:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.intelligence-price {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin: 25px 0;
+}
+
+.intelligence-price h2 {
+    margin: 0;
+    font-size: 34px;
+}
+
+.intelligence-price > span,
+.intelligence-signal {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 600;
+}
+
+.positive,
+.bullish {
+    color: #35c98b !important;
+}
+
+.negative,
+.bearish {
+    color: #f16e79 !important;
+}
+
+.neutral,
+.overbought,
+.oversold {
+    color: #e8b75c !important;
+}
+
+.intelligence-market-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 15px;
+    padding-top: 20px;
+    border-top: 1px solid #29354a;
+}
+
+.intelligence-market-stats div,
+.intelligence-prediction-grid div {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.intelligence-market-stats span,
+.intelligence-prediction-grid span {
+    color: #8f9cb1;
+    font-size: 12px;
+}
+
+.intelligence-market-stats strong,
+.intelligence-prediction-grid strong {
+    font-size: 15px;
+}
+
+.intelligence-section-heading {
+    margin-bottom: 22px;
+}
+
+.intelligence-section-heading h3 {
+    margin: 5px 0 0;
+    font-size: 18px;
+}
+
+.intelligence-section-heading > svg {
+    color: #779eff;
+}
+
+.intelligence-chart-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.intelligence-chart-summary strong {
+    font-size: 23px;
+}
+
+.intelligence-chart-summary span {
+    color: #929bad;
+    font-size: 12px;
+}
+
+.intelligence-chart {
+    width: 100%;
+    height: 250px;
+    background-image: linear-gradient(#29354a 1px, transparent 1px);
+    background-size: 100% 25%;
+}
+
+.intelligence-chart svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.intelligence-chart-labels {
+    display: flex;
+    justify-content: space-between;
+    color: #929bad;
+    font-size: 12px;
+    margin-top: 12px;
+}
+
+.intelligence-indicators {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.intelligence-indicators > div {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 17px;
+    background: #1c293b;
+    border: 1px solid #2b3a51;
+    border-radius: 11px;
+}
+
+.intelligence-indicators span {
+    color: #9aa8bd;
+    font-size: 12px;
+}
+
+.intelligence-indicators strong {
+    font-size: 21px;
+}
+
+.intelligence-indicators small {
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.intelligence-prediction-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.intelligence-prediction-grid > div {
+    padding: 18px;
+    background: #1c293b;
+    border-radius: 10px;
+}
+
+.intelligence-prediction-grid strong {
+    font-size: 23px;
+}
+
+.intelligence-signal {
+    width: fit-content;
+    padding: 9px 13px;
+    background: #243348;
+    border-radius: 8px;
+    margin-bottom: 18px;
+}
+
+.intelligence-model-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-top: 18px;
+    color: #9aa8bd;
+    font-size: 11px;
+}
+
+.intelligence-disclaimer {
+    margin-top: 18px;
+    color: #8f9cb1;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.intelligence-sentiment {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 18px;
+    background: #1c293b;
+    border-radius: 11px;
+}
+
+.intelligence-sentiment > div:first-child > span {
+    color: #779eff;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.intelligence-sentiment h2 {
+    margin: 8px 0 3px;
+}
+
+.intelligence-sentiment p {
+    color: #929bad;
+    font-size: 12px;
+    margin: 0;
+}
+
+.intelligence-sentiment-counts {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: #c5d2e7;
+    font-size: 12px;
+}
+
+.intelligence-news-list {
+    margin-top: 12px;
+}
+
+.intelligence-news-list article {
+    padding: 17px 0;
+    border-bottom: 1px solid #29354a;
+}
+
+.intelligence-news-list article:last-child {
+    border-bottom: none;
+}
+
+.intelligence-news-list h4 {
+    margin: 0 0 8px;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.intelligence-news-list p {
+    color: #9aa8bd;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.intelligence-news-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    color: #929bad;
+    font-size: 11px;
+}
+
+.intelligence-news-list a {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 12px;
+    color: #82a9ff;
+    font-size: 12px;
+    text-decoration: none;
+}
+
+.intelligence-summary ul {
+    padding-left: 20px;
+    margin: 0;
+}
+
+.intelligence-summary li {
+    color: #c5d2e7;
+    line-height: 1.7;
+    margin-bottom: 10px;
+}
+
+.intelligence-error {
+    color: #f18a91;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+@media (max-width: 800px) {
+    .intelligence-market-stats,
+    .intelligence-indicators {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 520px) {
+    .intelligence-card {
+        padding: 16px;
+    }
+
+    .intelligence-heading h1 {
+        font-size: 23px;
+    }
+
+    .intelligence-market-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .intelligence-indicators {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .intelligence-stock-title {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .intelligence-prediction-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .intelligence-sentiment {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .intelligence-suggestions button {
+        grid-template-columns: 75px 1fr;
+    }
+
+    .intelligence-suggestions small {
+        display: none;
+    }
+}
+
+
+/* =================================
+   THEME SUPPORT
+================================= */
+
+.intelligence-page {
+    color: var(--text-primary);
+}
+
+.intelligence-heading h1,
+.intelligence-stock-title h2,
+.intelligence-section-heading h3,
+.intelligence-price h2,
+.intelligence-chart-summary strong,
+.intelligence-prediction-grid strong,
+.intelligence-indicators strong,
+.intelligence-sentiment h2,
+.intelligence-news-list h4 {
+    color: var(--text-primary);
+}
+
+.intelligence-heading p,
+.intelligence-stock-title p,
+.intelligence-chart-summary span,
+.intelligence-chart-labels,
+.intelligence-market-stats span,
+.intelligence-prediction-grid span,
+.intelligence-model-info,
+.intelligence-disclaimer,
+.intelligence-sentiment p,
+.intelligence-news-meta,
+.intelligence-news-list p {
+    color: var(--text-secondary);
+}
+
+.intelligence-search,
+.intelligence-empty,
+.intelligence-card {
+    background: var(--surface-bg);
+    border-color: var(--border-color);
+}
+
+.intelligence-search input {
+    color: var(--text-primary);
+}
+
+.intelligence-suggestions {
+    background: var(--surface-bg);
+    border-color: var(--border-color);
+}
+
+.intelligence-suggestions button {
+    color: var(--text-primary);
+}
+
+.intelligence-suggestions button:hover {
+    background: var(--surface-hover);
+}
+
+.intelligence-suggestions span,
+.intelligence-suggestions small {
+    color: var(--text-secondary);
+}
+
+.intelligence-watchlist {
+    background: var(--surface-hover);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.intelligence-market-stats {
+    border-color: var(--border-color);
+}
+
+.intelligence-chart {
+    background-image: linear-gradient(
+        var(--border-color) 1px,
+        transparent 1px
+    );
+}
+
+.intelligence-indicators > div,
+.intelligence-prediction-grid > div,
+.intelligence-sentiment {
+    background: var(--surface-hover);
+    border-color: var(--border-color);
+}
+
+.intelligence-news-list article {
+    border-color: var(--border-color);
+}
+
+.intelligence-summary li {
+    color: var(--text-primary);
+}
+
+.intelligence-signal {
+    background: var(--surface-hover);
+}
+/* StockIntelligence.css */
+.intelligence-page {
+    padding: 28px 32px 40px;
+    box-sizing: border-box;
+}

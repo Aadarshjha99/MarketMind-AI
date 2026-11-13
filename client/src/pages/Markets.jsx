@@ -2,13 +2,16 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
+    getWatchlist,
+    addToWatchlist,
+    removeFromWatchlist
+} from "../services/watchlistApi";
+
+import {
     Search,
-    TrendingUp,
-    TrendingDown,
     ArrowUpRight,
     ArrowDownRight,
-    Star,
-    SlidersHorizontal
+    Star
 } from "lucide-react";
 
 import {
@@ -56,6 +59,10 @@ const stocks = [
 function Markets() {
 
     const navigate = useNavigate();
+
+    const [watchlistSymbols, setWatchlistSymbols] = useState([]);
+    const [watchlistLoading, setWatchlistLoading] = useState(true);
+    const [watchlistUpdating, setWatchlistUpdating] = useState({});
 
     const [quotes, setQuotes] = useState({});
     const [quotesLoading, setQuotesLoading] = useState(true);
@@ -126,6 +133,40 @@ function Markets() {
 
     }, []);
 
+    // --------------------------------
+    // Load User Watchlist
+    // --------------------------------
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadWatchlist = async () => {
+            try {
+                setWatchlistLoading(true);
+
+                const data = await getWatchlist();
+
+                if (isMounted) {
+                    setWatchlistSymbols(
+                        data.map((item) => item.symbol)
+                    );
+                }
+            } catch (error) {
+                console.error("Failed to load watchlist:", error);
+            } finally {
+                if (isMounted) {
+                    setWatchlistLoading(false);
+                }
+            }
+        };
+
+        loadWatchlist();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
 
     // --------------------------------
     // Stock Search
@@ -182,6 +223,52 @@ function Markets() {
 
     }, [search]);
 
+    // --------------------------------
+    // Toggle Watchlist
+    // --------------------------------
+
+    const handleWatchlistToggle = async (event, symbol) => {
+        event.stopPropagation();
+
+        if (watchlistUpdating[symbol] || watchlistLoading) {
+            return;
+        }
+
+        const isAdded = watchlistSymbols.includes(symbol);
+
+        try {
+            setWatchlistUpdating((prev) => ({
+                ...prev,
+                [symbol]: true
+            }));
+
+            if (isAdded) {
+                await removeFromWatchlist(symbol);
+
+                setWatchlistSymbols((prev) =>
+                    prev.filter((item) => item !== symbol)
+                );
+            } else {
+                await addToWatchlist(symbol);
+
+                setWatchlistSymbols((prev) =>
+                    prev.includes(symbol) ? prev : [...prev, symbol]
+                );
+            }
+        } catch (error) {
+            console.error("Watchlist update failed:", error);
+
+            alert(
+                error.response?.data?.message ||
+                "Unable to update your watchlist. Please try again."
+            );
+        } finally {
+            setWatchlistUpdating((prev) => ({
+                ...prev,
+                [symbol]: false
+            }));
+        }
+    };
 
     // --------------------------------
     // Helpers
@@ -346,77 +433,6 @@ function Markets() {
 
                 )}
 
-
-                <button className="filter-button">
-
-                    <SlidersHorizontal size={15} />
-
-                    Filters
-
-                </button>
-
-            </section>
-
-
-
-            {/* Market Overview */}
-
-            <section className="market-overview">
-
-                <div className="overview-item">
-
-                    <div className="overview-icon positive-bg">
-                        <TrendingUp size={17} />
-                    </div>
-
-                    <div>
-                        <span>Advancing</span>
-                        <strong>—</strong>
-                    </div>
-
-                </div>
-
-
-                <div className="overview-item">
-
-                    <div className="overview-icon negative-bg">
-                        <TrendingDown size={17} />
-                    </div>
-
-                    <div>
-                        <span>Declining</span>
-                        <strong>—</strong>
-                    </div>
-
-                </div>
-
-
-                <div className="overview-item">
-
-                    <div className="overview-icon neutral-bg">
-                        <span>—</span>
-                    </div>
-
-                    <div>
-                        <span>Unchanged</span>
-                        <strong>—</strong>
-                    </div>
-
-                </div>
-
-
-                <div className="overview-item">
-
-                    <div className="overview-index">
-                        N50
-                    </div>
-
-                    <div>
-                        <span>NIFTY 50</span>
-                        <strong>—</strong>
-                    </div>
-
-                </div>
 
             </section>
 
@@ -631,15 +647,37 @@ function Markets() {
                                     {/* Watchlist */}
 
                                     <button
-                                        className="watch-button"
-
+                                        className={`watch-button ${
+                                            watchlistSymbols.includes(stock.symbol)
+                                                ? "watch-button-active"
+                                                : ""
+                                        }`}
                                         onClick={(event) =>
-                                            event.stopPropagation()
+                                            handleWatchlistToggle(event, stock.symbol)
+                                        }
+                                        disabled={
+                                            watchlistLoading ||
+                                            watchlistUpdating[stock.symbol]
+                                        }
+                                        title={
+                                            watchlistSymbols.includes(stock.symbol)
+                                                ? "Remove from Watchlist"
+                                                : "Add to Watchlist"
+                                        }
+                                        aria-label={
+                                            watchlistSymbols.includes(stock.symbol)
+                                                ? `Remove ${stock.symbol} from Watchlist`
+                                                : `Add ${stock.symbol} to Watchlist`
                                         }
                                     >
-
-                                        <Star size={16} />
-
+                                        <Star
+                                            size={16}
+                                            fill={
+                                                watchlistSymbols.includes(stock.symbol)
+                                                    ? "currentColor"
+                                                    : "none"
+                                            }
+                                        />
                                     </button>
 
 
